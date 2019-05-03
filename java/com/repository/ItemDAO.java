@@ -1,4 +1,5 @@
 package com.repository;
+
 import com.model.Item;
 
 import org.hibernate.HibernateException;
@@ -22,6 +23,7 @@ public class ItemDAO implements DAO<Item> {
         }
         return sessionFactory;
     }
+
     @Override
     public Item save(Item item) {
         Session session = null;
@@ -77,7 +79,7 @@ public class ItemDAO implements DAO<Item> {
     }
 
     @Override
-    public Item update(Item item){
+    public Item update(Item item) {
         Session session = null;
         Transaction tr = null;
 
@@ -117,7 +119,10 @@ public class ItemDAO implements DAO<Item> {
             tr.begin();
 
             resItem = session.get(Item.class, id);
-            System.out.println("Item = " + resItem.getName());
+            if (resItem != null)
+                System.out.println("Item = " + resItem.getName());
+            else
+                System.out.println("Item does not exist");
             session.getTransaction().commit();
             System.out.println("find item by id is done");
         } catch (HibernateException e) {

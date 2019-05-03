@@ -19,7 +19,7 @@ import java.util.Date;
 @Table(name = "Item")
 public class Item implements Serializable {
 
-    @JsonIgnore
+
     private long id;
     private String name;
     private Date dateCreated;

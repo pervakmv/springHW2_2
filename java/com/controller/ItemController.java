@@ -2,13 +2,18 @@ package com.controller;
 
 import com.model.Item;
 import com.service.ItemService;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Controller
@@ -17,47 +22,73 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
-    @RequestMapping(method = RequestMethod.GET, value = "/add", produces = "text/plain")
-    public @ResponseBody
-    Item add(Item item) {
-        //return itemService.add(item);
-        System.out.println("add");
-        return null;
+    @RequestMapping(method = RequestMethod.POST, value = "/add", produces = "text/plain")
+    public String add(@RequestBody String item) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        objectMapper.setDateFormat(df);
+
+        try {
+            Item newItem = objectMapper.readValue(item, Item.class);
+            newItem.setId((long)0); //Поскольку Id генерируется автоматически
+            itemService.add(newItem);
+        } catch (JsonParseException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        } catch (JsonMappingException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        }
+        return item;
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/delete", produces = "text/plain")
-    public @ResponseBody
-    Item delete(long id) {
-
-        //return itemService.delete(id);
-        System.out.println("delete");
-        return null;
+    //Пробный запрос
+    @RequestMapping(value = "/something", method = RequestMethod.POST)
+    public void handle(@RequestBody String body, Writer writer) throws IOException {
+        writer.write(body);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/update", produces = "text/plain")
-    public @ResponseBody
-    Item update(Item item) {
 
-        //return itemService.update(item);
-        System.out.println("update");
-        return null;
+    @RequestMapping(method = RequestMethod.GET, value = "/delete/{id}", produces = "text/plain")
+    public @ResponseBody
+    void delete(@PathVariable String id) {
+        itemService.delete(Long.parseLong(id));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/findById", produces = "text/plain")
-    public @ResponseBody
-    Item findById(long id) {
+    @RequestMapping(method = RequestMethod.POST, value = "/update", produces = "text/plain")
+    public String update(@RequestBody String item) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        objectMapper.setDateFormat(df);
+        try {
+            Item updatingItem = objectMapper.readValue(item, Item.class);
+            itemService.update(updatingItem);
 
-        //return itemService.findById(id);
-        System.out.println("findById");
-        return null;
+        } catch (JsonParseException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        } catch (JsonMappingException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Exception Occured whiile converting the Json into java" + e.getMessage());
+        }
+        return item;
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/findById/{id}", produces = "text/plain")
+    public @ResponseBody
+    Item findById(@PathVariable String id) {
+        System.out.println(id);
+        Item item = itemService.findById(Long.parseLong(id));
+        System.out.println(item);
+        return item;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/list", produces = "text/plain")
     public @ResponseBody
     List<Item> itemsList() {
-
-
-        return itemService.itemsList();
+        List<Item> resList = itemService.itemsList();
+        System.out.println(resList);
+        return resList;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/findByName", produces = "text/plain")
